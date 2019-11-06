@@ -1,5 +1,6 @@
 # Task.objects.filter(parent_id=None)
 # children[0].parent_task.all().exists()
+# a[0].children_tasks.all()
 # if none subtasks strted, scheduled.
 # list of parents until access leaf node
 
