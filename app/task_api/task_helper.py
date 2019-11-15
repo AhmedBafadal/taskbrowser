@@ -70,14 +70,7 @@ def set_status_parent_node(parent_nodes):
     else:
         return
 
-# write script to load test data
-# the status of hte application owuld need to be refreshed every x mins due to leaf nodes depending on current time
-# view to visualise
-# read only fields status
-# script to add dummy data to the database
-# authentication
-# ptyhon manage.py shell docker exec -it <containerid>
-if __name__ == "__main__":
-    leaf_nodes_list, parents_node_list = leaf_nodes(Task.objects.filter(parent=None))
-    set_status_leafnodes(leaf_nodes_list)
-    set_status_parent_node(parents_node_list)
+# if __name__ == "__main__":
+#     leaf_nodes_list, parents_node_list = leaf_nodes(Task.objects.filter(parent=None))
+#     set_status_leafnodes(leaf_nodes_list)
+#     set_status_parent_node(parents_node_list)

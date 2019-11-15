@@ -1,8 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-# Create your models here.
-
+from django.contrib.auth.models import AbstractBaseUser, UserManager
 
 class Task(models.Model):
     """Task Object"""
@@ -33,3 +32,13 @@ class Task(models.Model):
 
     def __str__(self):
         return f'{self.name}'
+
+
+class User(AbstractBaseUser):
+    """Custom user model that supports using email instead of username"""
+    email = models.EmailField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
