@@ -9,3 +9,14 @@
 # a.parent_task.all().values_list("status", flat=True)
 # from django.db.models import Max
 # a.parent_task.all().aggregate(Max("end_timestamp"))["end_timestamp__max"]
+
+from core.models import Task
+from rest_framework import serializers
+
+class TaskSerializer(serializers.ModelSerializer):
+    """Serializer for Task object"""
+
+    class Meta:
+        model = Task
+        fields = ('id', 'name', 'status', 'start_timestamp', 'end_timestamp','parent')
+        read_only_fields=('id',)

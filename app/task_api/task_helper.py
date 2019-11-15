@@ -20,25 +20,26 @@ def leaf_node(tasks_queryset, leaf_nodes_list, parents_node_list):
             parents_node_list.append(task)
             leaf_node(task.children_tasks.all(), leaf_nodes_list, parents_node_list)
     # reverse parents list to set parent statuses in correct order (e.g. B1 before B)
-    return leaf_nodes_list, reverse(parents_node_list)
+    return leaf_nodes_list, parents_node_list.reverse()
 
 
-def leaf_nodes():
+def leaf_nodes(task_obj):
     leaf_nodes_list = []
-    root_parent_tasks = Task.objects.filter(parent=None)
-    
-    return leaf_node(root_parent_tasks, leaf_nodes_list,)
+    root_parent_tasks = task_obj 
+    parent_nodes = []
+
+    return leaf_node(root_parent_tasks, leaf_nodes_list, parent_nodes)
 
 
 def set_status_leafnodes(nodes):
     for task in nodes:
-        if task.start_timestamp > datetime.now():
+        if task.start_timestamp > datetime.now(timezone.utc):
             task.status = 'scheduled'
             task.save()
-        elif  task.start_timestamp < datetime.now() < task.end_timestamp:
+        elif  task.start_timestamp < datetime.now(timezone.utc) < task.end_timestamp:
             task.status = 'running'
             task.save()
-        elif datetime.now() > task.end_timestamp:
+        elif datetime.now(timezone.utc) > task.end_timestamp:
             task.status = 'complete'
             task.save()
 
@@ -46,25 +47,28 @@ def set_status_leafnodes(nodes):
 def set_status_parent_node(parent_nodes):
     # need to go bottom up. tasks ordered that way to decipher parent node status
     # order parent nodes
-    for task in parent_nodes:
-        # list of statuses of children
-        children_tasks_status = list(task.children_tasks.values_list('status', flat=True))
-        if all(children_tasks_status  == 'scheduled'):
-            task.status = 'scheduled'
-            task.save()
-        elif any(children_tasks_status == 'running'):
-            task.status = 'running'
-            task.save()
-            # multi-runs
-            
+    if parent_nodes:
+        for task in parent_nodes:
+            # list of statuses of children
+            children_tasks_status = list(task.children_tasks.values_list('status', flat=True))
+            if all(children_tasks_status  == 'scheduled'):
+                task.status = 'scheduled'
+                task.save()
+            elif any(children_tasks_status == 'running'):
+                task.status = 'running'
+                task.save()
+                # multi-runs
+                
 
-        elif Counter(children_tasks_status).get('running'))>2:
-            task.status = 'multi_runs'
-            task.save()
-        # idle
-        elif any(children_tasks_status == 'complete') and any(children_tasks_status == 'scheduled') and all(children_tasks_status!='running'):
-            task.status = 'idle'
-            task.save()
+            elif Counter(children_tasks_status).get('running')>2:
+                task.status = 'multi_runs'
+                task.save()
+            # idle
+            elif any(children_tasks_status == 'complete') and any(children_tasks_status == 'scheduled') and all(children_tasks_status!='running'):
+                task.status = 'idle'
+                task.save()
+    else:
+        return
 
 # write script to load test data
 # the status of hte application owuld need to be refreshed every x mins due to leaf nodes depending on current time
@@ -74,6 +78,6 @@ def set_status_parent_node(parent_nodes):
 # authentication
 # ptyhon manage.py shell docker exec -it <containerid>
 if __name__ == "__main__":
-    leaf_nodes_list, parents_node_list = leaf_nodes()
+    leaf_nodes_list, parents_node_list = leaf_nodes(Task.objects.filter(parent=None))
     set_status_leafnodes(leaf_nodes_list)
     set_status_parent_node(parents_node_list)

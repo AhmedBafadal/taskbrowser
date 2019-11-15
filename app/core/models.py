@@ -28,7 +28,8 @@ class Task(models.Model):
     parent = models.ForeignKey(
         'self', null=True, blank=True,
         related_name='children_tasks', on_delete=models.DO_NOTHING)
-    # task_owner =/
+    # task_owner = Models.ForeignKey()
+    # priority = models.IntegerField(null=True)
 
     def __str__(self):
         return f'{self.name}'
